@@ -16,7 +16,7 @@ home_dir = getenv('HOME');
 oak_dir = getenv('OAK');
 out_dir = [home_dir '/MSCcodebase/results'];
 MSC_dir = [oak_dir '/inprocess/MSC/ds000224'];
-derivatives_dir = [oak_dir '/inprocess/MSC/ds000224-fmriprep'];
+derivatives_dir = [oak_dir '/inprocess/MSC/ds000224-derivatives'];
 surface_pipeine_dir = [derivatives_dir '/surface_pipeline'];
 
 sessions = {'01'};
