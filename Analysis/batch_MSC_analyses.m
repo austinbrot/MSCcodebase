@@ -19,7 +19,7 @@ MSC_dir = [oak_dir '/inprocess/MSC/ds000224'];
 derivatives_dir = [oak_dir '/inprocess/MSC/ds000224-derivatives'];
 surface_pipeine_dir = [derivatives_dir '/surface_pipeline'];
 
-sessions = {'01'};
+sessions = {'01', '03', '05', '07', '09'};
 % sessions = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
 
 
