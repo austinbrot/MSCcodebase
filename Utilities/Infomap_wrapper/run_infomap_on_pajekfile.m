@@ -5,7 +5,7 @@ function [Ci] = run_infomap_on_pajekfile(pajekfilename,reps)
 % This script runs infomap on a pajekfile with some number of
 % repetitions. It then returns the community assignments found.
 
-infomapfolder = '/data/cn/data1/scripts/CIFTI_RELATED/Infomap';
+infomapfolder = [getenv('HOME') '/infomap'];
 
 % this will be the relevant output of infomap
 [pathstr,cluname,ext] = filenamefinder(pajekfilename,'dotsout');
@@ -19,7 +19,7 @@ randnum=ceil(rand*1000000);
 % run infomap
 c=clock;
 fprintf('\t%2.0f:%2.0f:%2.0f: infomap beginning\n',c(4),c(5),c(6));
-[failed, message] = system([infomapfolder '/Infomap-0.15.7/Infomap --clu -2 -s' num2str(randnum) ' -N' num2str(reps) ' ' pajekfilename ' ' pathstr]);
+[failed, message] = system([infomapfolder '/Infomap --clu -2 -s' num2str(randnum) ' -N' num2str(reps) ' ' pajekfilename ' ' pathstr]);
 c=clock;
 fprintf('\t%2.0f:%2.0f:%2.0f: infomap finished\n',c(4),c(5),c(6));
 if logical(failed)
