@@ -32,8 +32,6 @@ if ischar(inputmaps)
     inputmaps = ft_read_cifti_mod(inputmaps); inputmaps = inputmaps.data;
 end
 
-wbdir = '/data/cn/data1/scripts/CIFTI_RELATED/Resources/workbench/bin_linux64/';
-
 surfaceareas = ft_read_cifti_mod('/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/Conte69.LR.midthickness.32k_fs_LR_surfaceareas_cortexonly.dtseries.nii');
 
 inputmaps = inputmaps(1:size(surfaceareas.data,1),:);
@@ -113,7 +111,7 @@ sorted_inputmaps = sort(inputmaps,2);
 temp = surfaceareas; temp.data = valuecombinations;
 ft_write_cifti_mod('Temp',temp);
 
-evalc(['!' wbdir 'wb_command -cifti-resample Temp.dtseries.nii COLUMN ' cifti_out_templatefile ' COLUMN BARYCENTRIC ENCLOSING_VOXEL Temp_164.dtseries.nii -surface-largest -left-spheres /data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k/Conte69.L.sphere.32k_fs_LR.surf.gii /data/cn4/segmentation/freesurfer5_supercomputer/FREESURFER_fs_LR/vc25125/7112b_fs_LR/vc25125.L.sphere.164k_fs_LR.surf.gii -right-spheres /data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k/Conte69.R.sphere.32k_fs_LR.surf.gii /data/cn4/segmentation/freesurfer5_supercomputer/FREESURFER_fs_LR/vc25125/7112b_fs_LR/vc25125.R.sphere.164k_fs_LR.surf.gii']);
+evalc(['!wb_command -cifti-resample Temp.dtseries.nii COLUMN ' cifti_out_templatefile ' COLUMN BARYCENTRIC ENCLOSING_VOXEL Temp_164.dtseries.nii -surface-largest -left-spheres /data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k/Conte69.L.sphere.32k_fs_LR.surf.gii /data/cn4/segmentation/freesurfer5_supercomputer/FREESURFER_fs_LR/vc25125/7112b_fs_LR/vc25125.L.sphere.164k_fs_LR.surf.gii -right-spheres /data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k/Conte69.R.sphere.32k_fs_LR.surf.gii /data/cn4/segmentation/freesurfer5_supercomputer/FREESURFER_fs_LR/vc25125/7112b_fs_LR/vc25125.R.sphere.164k_fs_LR.surf.gii']);
 
 valuecombinations_upsampled = ft_read_cifti_mod('Temp_164.dtseries.nii'); valuecombinations_upsampled = valuecombinations_upsampled.data;
 

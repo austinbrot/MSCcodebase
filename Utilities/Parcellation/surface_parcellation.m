@@ -53,7 +53,6 @@ function  surface_parcellation(cohortfile,tmasklist,subsample,dosubcort,outputdi
 
 % PARAMETERS TO SET
 smooth = 2.55; % sigma for geodesic smoothing applied to gradient maps
-workbenchdir = 'nice /data/cn/data1/scripts/CIFTI_RELATED/Resources/workbench/bin_linux64/'; %location of workbench
 atlasdir = '/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/'; % Location of atlas surface
 
 %-----------------------------------------------------------------------
@@ -176,7 +175,7 @@ for s = 1:length(subjects)
     % Calculate gradients
     disp('Calculating gradient')
     gradsname = 'corrofcorr_allgrad_LR_subcort';
-    evalc(['!' workbenchdir '/wb_command -cifti-gradient ' outputdir '/corrofcorr_LR_subcort.dtseries.nii COLUMN ' outputdir '/' gradsname '.dtseries.nii -left-surface ' midsurf_32k_sub{1} ' -right-surface ' midsurf_32k_sub{2}]);
+    evalc(['!wb_command -cifti-gradient ' outputdir '/corrofcorr_LR_subcort.dtseries.nii COLUMN ' outputdir '/' gradsname '.dtseries.nii -left-surface ' midsurf_32k_sub{1} ' -right-surface ' midsurf_32k_sub{2}]);
     
     % Convert gradients and load
     grads = ft_read_cifti_mod([outputdir '/' gradsname '.dtseries.nii']);
@@ -207,7 +206,7 @@ ciftistruct_orig.data = [];
 
 % Smooth gradients before edge detection
 disp('Smoothing average gradient')
-system([workbenchdir '/wb_command -cifti-smoothing ' outputdir '/' gradsname '.dtseries.nii ' num2str(smooth) ' ' num2str(smooth) ' COLUMN ' outputdir '/' gradsname '_smooth' num2str(smooth) '.dtseries.nii -left-surface ' midsurf_32k_atlas{1} ' -right-surface ' midsurf_32k_atlas{2}]);
+system(['wb_command -cifti-smoothing ' outputdir '/' gradsname '.dtseries.nii ' num2str(smooth) ' ' num2str(smooth) ' COLUMN ' outputdir '/' gradsname '_smooth' num2str(smooth) '.dtseries.nii -left-surface ' midsurf_32k_atlas{1} ' -right-surface ' midsurf_32k_atlas{2}]);
 
 neighbors = cifti_neighbors([outputdir '/' gradsname '_smooth' num2str(smooth) '.dtseries.nii']);
 
