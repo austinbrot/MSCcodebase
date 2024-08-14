@@ -117,15 +117,19 @@ ciftistruct_orig.data = [];
 % Calculate gradients
 disp('Calculating gradient')
 gradsname = 'corrofcorr_allgrad_LR_subcort';
-[~,~] = system(['wb_command -cifti-gradient ' outputdir '/corrofcorr_LR_subcort.dtseries.nii COLUMN ' outputdir '/' gradsname '.dtseries.nii -left-surface ' midsurf_32k_sub{1} ' -right-surface ' midsurf_32k_sub{2}]);
+[status,cmdout] = system(['wb_command -cifti-gradient ' outputdir '/corrofcorr_LR_subcort.dtseries.nii COLUMN ' outputdir '/' gradsname '.dtseries.nii -left-surface ' midsurf_32k_sub{1} ' -right-surface ' midsurf_32k_sub{2}]);
+disp(['Gradient command output: ' cmdout])
+disp(cmdout)
 
-delete([outputdir '/corrofcorr_LR_subcort.dtseries.nii'])
+% delete([outputdir '/corrofcorr_LR_subcort.dtseries.nii'])
 
 
 
 % Smooth gradients before edge detection
 disp('Smoothing gradient')
-[~,~] = system(['wb_command -cifti-smoothing ' outputdir '/' gradsname '.dtseries.nii ' num2str(smooth) ' ' num2str(smooth) ' COLUMN ' outputdir '/' gradsname '_smooth' num2str(smooth) '.dtseries.nii -left-surface ' midsurf_32k_sub{1} ' -right-surface ' midsurf_32k_sub{2}]);
+[status, cmdout] = system(['wb_command -cifti-smoothing ' outputdir '/' gradsname '.dtseries.nii ' num2str(smooth) ' ' num2str(smooth) ' COLUMN ' outputdir '/' gradsname '_smooth' num2str(smooth) '.dtseries.nii -left-surface ' midsurf_32k_sub{1} ' -right-surface ' midsurf_32k_sub{2}]);
+disp(['Smoothing command output: ' cmdout])
+disp(cmdout)
 
 neighbors = cifti_neighbors([outputdir '/' gradsname '_smooth' num2str(smooth) '.dtseries.nii']);
 
@@ -139,7 +143,7 @@ ft_write_cifti_mod([outputdir '/' gradsname '_smooth' num2str(smooth) 'avg'],cif
 fullgrads_smooth = ciftistruct.data;
 ciftistruct.data = [];
 
-delete([outputdir '/' gradsname '.dtseries.nii'])
+% delete([outputdir '/' gradsname '.dtseries.nii'])
 
 disp('Calculating edges')
 
@@ -148,7 +152,7 @@ disp('Calculating edges')
 minimametrics = metric_minima_all_cifti(fullgrads_smooth,3,neighbors);
 
 % Run watershed-by-flooding algorithm on each gradient map to generate edges
-edges = watershed_algorithm_all_cifti(fullgrads_smooth,minimametrics,200,1,neighbors);
+edges = watershed_algorithm_all_par_cifti(fullgrads_smooth,minimametrics,200,1,neighbors);
 clear fullgrads_smooth
 
 % Average across gradient maps and save
@@ -157,7 +161,7 @@ ciftistruct.data = edge_density;
 ft_write_cifti_mod([outputdir '/' gradsname '_smooth' num2str(smooth) '_wateredge_avg'],ciftistruct);
 
 % Save watershed edges from all gradient maps
-%ciftistruct.data = edges;
-%ft_write_cifti_mod([outputdir '/' gradsname '_smooth' num2str(smooth) '_wateredge_all'],ciftistruct);
+ciftistruct.data = edges;
+ft_write_cifti_mod([outputdir '/' gradsname '_smooth' num2str(smooth) '_wateredge_all'],ciftistruct);
 clear edges ciftistruct_orig
 

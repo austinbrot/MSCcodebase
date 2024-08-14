@@ -5,7 +5,7 @@ thresholds = [.003 .004 .005:.005:.05];
 
 
 %% Analyses to run
-run_vertexwise_infomap = 0;
+run_vertexwise_infomap = 1;
 run_parcellation = 1;
 make_parcel_corrmats = 1;
 make_parcel_distmats = 1;
@@ -14,12 +14,14 @@ run_spring_embedding = 1;
 
 home_dir = getenv('HOME');
 oak_dir = getenv('OAK');
-out_dir = [home_dir '/MSCcodebase/results'];
-MSC_dir = [oak_dir '/inprocess/MSC/ds000224'];
-derivatives_dir = [oak_dir '/inprocess/MSC/ds000224-derivatives'];
+scratch_dir = getenv('SCRATCH');
+out_dir = fullfile(scratch_dir, '/MSCcodebase/results');
+MSC_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224');
+derivatives_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives');
 surface_pipeine_dir = [derivatives_dir '/surface_pipeline'];
 
-sessions = {'01', '03', '05', '07', '09'};
+sessions = {'01'};
+% sessions = {'01', '03', '05', '07', '09'};
 % sessions = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
 
 
@@ -27,17 +29,14 @@ for MSCnum = MSCnums
     
     MSCname = ['MSC' sprintf('%02i',MSCnum)];
     %%
-    infomap_outfolder = [out_dir '/infomap/' MSCname '_infomap_p003_p005_p05/'];
-    parcellation_outfolder = [out_dir '/parcels/'];
-    springembed_outfolder = [out_dir '/spring_embed/'];
-    parcelinfomap_outfolder = [parcellation_outfolder '/' MSCname '_parcels_LR_infomap_p003_p05/'];
-    surfdir = [surface_pipeine_dir '/' MSCname '/fs_LR_Talairach/fsaverage_LR32k/'];
-    dmatname = [surface_pipeine_dir '/' MSCname '/cifti_distances/distmat_surf_geodesic_vol_euc_xhem_large_uint8.mat'];
+    infomap_outfolder = [out_dir '/infomap/' MSCname '_infomap_p003_p005_p05'];
+    parcellation_outfolder = [out_dir '/parcels'];
+    springembed_outfolder = [out_dir '/spring_embed'];
+    parcelinfomap_outfolder = [parcellation_outfolder '/' MSCname '_parcels_LR_infomap_p003_p05'];
+    surfdir = [surface_pipeine_dir '/sub-' MSCname '/fs_LR_Talairach/fsaverage_LR32k'];
+    dmatname = [surface_pipeine_dir '/sub-' MSCname '/cifti_distances/sub-' MSCname 'distmat_surf_geodesic_vol_euc_xhem_large_uint8.mat'];
         
     
-    
-    tmaskfile = ['/data/nil-bluearc/GMT/Laumann/MSC/' MSCname '/' MSCname '_TMASKLIST.txt'];
-    % [subjectlist, tmask_list] = textread(tmaskfile,'%s %s');
     ciftifiles = cell(length(sessions),1);
     tmask_list = cell(length(sessions),1);
     rest_dir = [surface_pipeine_dir '/sub-' MSCname '/processed_restingstate_timecourses'];
@@ -48,16 +47,16 @@ for MSCnum = MSCnums
     end
         
     
-    % TODO: Figure out what this line should be
-    ciftidata = ['/data/nil-bluearc/GMT/Evan/MSC/subjects/' MSCname '/cifti/cifti_timeseries_normalwall/RSFC_LR_surf_subcort_333_32k_fsLR_smooth2.55.dtseries.nii'];
+    % only used as template for parcel_creator_cifti. TODO: check if change to normalwall cifti needed
+    ciftidata = ciftifiles{1}; 
     parcellation_file = [parcellation_outfolder '/' MSCname '_parcels_LR.dtseries.nii'];
     
     mkdir(infomap_outfolder);
-    mkdir(springembed_outfolder)
+    mkdir(springembed_outfolder);
     
     %% vertexwise infomap
     if run_vertexwise_infomap
-        
+        % TODO: reincorporate if generating new dmat
         % distances = smartload(['/data/nil-bluearc/GMT/Laumann/MSC/' MSCname '/normalwall_distmat_333_native_freesurf/distmat_surf_geodesic_vol_euc.mat']);
         % distances = uint8(distances);
         % distances(1:29696,29697:59412) = 255;
@@ -70,7 +69,7 @@ for MSCnum = MSCnums
         for s = 1:length(sessions)
             tmask = load(tmask_list{s}); 
             data = ft_read_cifti_mod(ciftifiles{s});
-            session_data = data.data(:,logical(tmask))
+            session_data = data.data(:,logical(tmask));
             if s==1
                 alldata = session_data;
             else
@@ -98,9 +97,9 @@ for MSCnum = MSCnums
         data.data = regularized;
         ft_write_cifti_mod([MSCname '_rawassn_minsize400_regularized'],data);
         try movefile('rawassn_minsize400_regularized.dtseries.nii',[MSCname '_rawassn_minsize400_regularized.dtseries.nii']); catch; end
-        consensus_maker_knowncolors([MSCname '_rawassn_minsize400_regularized.dtseries.nii'],[],[],1)
-        make_block_diagram([MSCname '_rawassn_minsize400_regularized_allcolumns_recolored.dtseries.nii'],thresholds)
-        cifti_to_border_v2([MSCname '_rawassn_minsize400_regularized_recolored.dscalar.nii'],1,1,'default')
+        consensus_maker_knowncolors([MSCname '_rawassn_minsize400_regularized.dtseries.nii'],[],[],1);
+        make_block_diagram([MSCname '_rawassn_minsize400_regularized_allcolumns_recolored.dtseries.nii'],thresholds);
+        cifti_to_border_v2([MSCname '_rawassn_minsize400_regularized_recolored.dscalar.nii'],1,1,'default');
         
     end
     
@@ -134,7 +133,7 @@ for MSCnum = MSCnums
         clear corrmat;
         
         disp('Parcellating surface...');
-        surface_parcellation_singlesub(MSCname,data,surfdir,1,0,[parcellation_outfolder '/' MSCname '/'])
+        surface_parcellation_singlesub(MSCname,data,surfdir,100,0,[parcellation_outfolder '/' MSCname]);
         
         parcel_creator_cifti('corrofcorr_allgrad_LR_subcort_smooth2.55_wateredge_avg.dtseries.nii',[MSCname '_parcels'],edgethresh,ciftidata)
         movefile([parcellation_outfolder '/' MSCname '/' MSCname '_parcels_edgethresh_' num2str(edgethresh) '.dtseries.nii'],parcellation_file);
@@ -183,7 +182,7 @@ for MSCnum = MSCnums
         
         distances = smartload(dmatname);
         
-        parcels = ft_read_cifti_mod([parcellation_outfolder '/' MSCname '_parcels_LR.dtseries.nii']);
+        parcels = ft_read_cifti_mod(parcellation_file);
         parcelIDs = unique(parcels.data); parcelIDs(parcelIDs<1) = [];
         
         parcel_centroids = zeros(length(parcelIDs),1);

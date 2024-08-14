@@ -2,10 +2,10 @@
 #SBATCH --job-name=batch_msc_analyses
 #SBATCH --output=log/%x.%j.out
 #SBATCH --error=log/%x.%j.err
-#SBATCH --time=6:00:00
-#SBATCH -p bigmem,normal,russpold
-#SBATCH -c 16
-#SBATCH --mem=256G
+#SBATCH --time=24:00:00
+#SBATCH -p bigmem
+#SBATCH -c 8
+#SBATCH --mem 256G
 #SBATCH --mail-type END
 #SBATCH --mail-user abrotman@stanford.edu
 

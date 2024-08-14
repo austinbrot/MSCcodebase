@@ -124,15 +124,26 @@ numpossibleedges=(numnodes*(numnodes-1))/2;
 clear rmat
 
 % Write out other thresholds
-for i = 1:numanalyses
-    if i<numanalyses
-        pajekfile = [outdir '/pajek_col' num2str(i) '.net'];
-        edgesleft=round(thresholdarray(i)*numpossibleedges);
-        numuse = edgesleft + numnodes + 2; % Number of edges plus number of nodes plus 2 lines for the headers in the pajek file
-        evalc(['!head -n ' num2str(numuse) ' ' pajekfileorig ' >! ' pajekfile]);
-    end
-end
+% for i = 1:numanalyses
+%     if i<numanalyses
+%         pajekfile = [outdir '/pajek_col' num2str(i) '.net'];
+%         edgesleft=round(thresholdarray(i)*numpossibleedges);
+%         numuse = edgesleft + numnodes + 2; % Number of edges plus number of nodes plus 2 lines for the headers in the pajek file
+%         evalc(['!head -n ' num2str(numuse) ' ' pajekfileorig ' >! ' pajekfile]);
+%     end
+% end
     
+disp(['Expected analyses: ' num2str(numanalyses)])
+for i = 1:(numanalyses - 1)
+    pajekfile = [outdir '/pajek_col' num2str(i) '.net'];
+    edgesleft=round(thresholdarray(i)*numpossibleedges);
+    numuse = edgesleft + numnodes + 2; % Number of edges plus number of nodes plus 2 lines for the headers in the pajek file
+    disp(['Running: head -n ' num2str(numuse) ' ' pajekfileorig ' > ' pajekfile])
+    [status, output] = system(['head -n ' num2str(numuse) ' ' pajekfileorig ' > ' pajekfile]);
+    disp(['Status and output of head command for analysis ' num2str(i) ':'])
+    disp(status)
+    disp(output)
+end
 string = ['running infomap'];
 fprintf(string);
 %fprintf([repmat('\b',1,length(prevstring)) '%s'],string);

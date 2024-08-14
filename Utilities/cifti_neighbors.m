@@ -36,7 +36,7 @@ end
     cifti.data = [];
 
 bufsize=16384;
-surfneighborfile = '/data/cn/data1/scripts/CIFTI_RELATED/Resources/node_neighbors.txt';
+surfneighborfile = fullfile(getenv('HOME'), 'MSCcodebase', 'Utilities', 'node_neighbors.txt');
 % Read in node neighbor file generated from caret -surface-topology-neighbors
 [surfneighbors(:,1) surfneighbors(:,2) surfneighbors(:,3) surfneighbors(:,4)...
     surfneighbors(:,5) surfneighbors(:,6) surfneighbors(:,7)] = ...

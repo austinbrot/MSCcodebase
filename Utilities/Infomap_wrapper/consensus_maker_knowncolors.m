@@ -14,7 +14,12 @@ if ~exist('minsize','var') || isempty(minsize)
 end
 
 if ~exist('groupnetworksfile','var') || isempty(groupnetworksfile)
-    groupnetworksfile = '/data/nil-bluearc/GMT/Evan/MSC/Analysis_V2/Networks_template.dscalar.nii';
+    groupnetworksfile = fullfile(getenv("HOME"), ...
+                                 'MSCcodebase', ...
+                                 'Utilities', ...
+                                 'Conte69_atlas-v2.LR.32k_fs_LR.wb', ...
+                                 'Networks_template.dscalar.nii');
+
 end
 
 % Create consensus by accepting all assignments at the mincol threshold and assigning unassigned nodes to their higher threshold assignments

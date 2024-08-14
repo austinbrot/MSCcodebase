@@ -35,5 +35,13 @@ while isclufile == 0
     isclufile = exist(clufile);
 end
 
-Ci = textread(clufile,'%d','headerlines',1);
+% sort cluster assignments by node ordering
+clu_fid = fopen(clufile);
+clu_data = textscan(clu_fid,'%d %d %f','headerlines',10);
+custers = clu_data{2};
+nodes = clu_data{1};
+fclose(clu_fid);
+[~, sortidx] = sort(nodes);
+Ci = custers(sortidx);
+
 end
