@@ -10,6 +10,8 @@ end
 
 reorderedcolors = colors(reorder,:);
 
+disp(recolored_allcolumns_file);
+
 origmatrix = ft_read_cifti_mod(recolored_allcolumns_file); origmatrix = origmatrix.data;
 origmatrix(origmatrix<1) = 18; origmatrix(origmatrix>17) = 18;
 

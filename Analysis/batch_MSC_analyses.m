@@ -5,12 +5,12 @@ thresholds = [.003 .004 .005:.005:.05];
 
 
 %% Analyses to run
-run_vertexwise_infomap = 1;
+run_vertexwise_infomap = 1; % 12h per subject, the rest is < 30min
 run_parcellation = 1;
 make_parcel_corrmats = 1;
 make_parcel_distmats = 1;
 run_parcel_infomap = 1;
-run_spring_embedding = 1;
+run_spring_embedding = 0;
 
 home_dir = getenv('HOME');
 oak_dir = getenv('OAK');
@@ -20,8 +20,8 @@ MSC_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224');
 derivatives_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives');
 surface_pipeine_dir = [derivatives_dir '/surface_pipeline'];
 
-sessions = {'01'};
-% sessions = {'01', '03', '05', '07', '09'};
+% sessions = {'01'};
+sessions = {'01', '03', '05', '07', '09'};
 % sessions = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
 
 
@@ -98,7 +98,7 @@ for MSCnum = MSCnums
         ft_write_cifti_mod([MSCname '_rawassn_minsize400_regularized'],data);
         try movefile('rawassn_minsize400_regularized.dtseries.nii',[MSCname '_rawassn_minsize400_regularized.dtseries.nii']); catch; end
         consensus_maker_knowncolors([MSCname '_rawassn_minsize400_regularized.dtseries.nii'],[],[],1);
-        make_block_diagram([MSCname '_rawassn_minsize400_regularized_allcolumns_recolored.dtseries.nii'],thresholds);
+        make_block_diagram([MSCname '_rawassn_minsize400_regularized_allcolumns_recolored.dscalar.nii'],thresholds);
         cifti_to_border_v2([MSCname '_rawassn_minsize400_regularized_recolored.dscalar.nii'],1,1,'default');
         
     end

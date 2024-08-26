@@ -24,6 +24,11 @@ function make_striped_cifti(inputmaps,minclustersizemm,outname,stripewidth)
 %
 % E. Gordon 03/18/15
 
+code_dir = fullfile(getenv('HOME'), 'MSCcodebase');
+utils_dir = fullfile(code_dir, 'Utilities');
+conte_32k_dir = fullfile(utils_dir, 'Conte69_atlas-v2.LR.32k_fs_LR.wb');
+conte_164k_dir = fullfile(utils_dir, 'Conte69_atlas.LR.164k_fs_LR');
+
 if ~exist('stripewidth')
     stripewidth = 1/40;
 end
@@ -32,19 +37,19 @@ if ischar(inputmaps)
     inputmaps = ft_read_cifti_mod(inputmaps); inputmaps = inputmaps.data;
 end
 
-surfaceareas = ft_read_cifti_mod('/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/Conte69.LR.midthickness.32k_fs_LR_surfaceareas_cortexonly.dtseries.nii');
+surfaceareas = ft_read_cifti_mod([conte_32k_dir '/Conte69.LR.midthickness.32k_fs_LR_surfaceareas_cortexonly.dtseries.nii']);
 
 inputmaps = inputmaps(1:size(surfaceareas.data,1),:);
 
-neighbors = smartload('/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/Cifti_surf_neighbors_LR_normalwall.mat');
+neighbors = smartload([conte_32k_dir '/Cifti_surf_neighbors_LR_normalwall.mat']); % dne
 
-mask_32k{1} = gifti(['/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/parcellations_VGD11b.L.32k_fs_LR.label.gii']); mask_32k{1} = ~mask_32k{1}.cdata(:,3);
-mask_32k{2} = gifti(['/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/parcellations_VGD11b.R.32k_fs_LR.label.gii']); mask_32k{2} = ~mask_32k{2}.cdata(:,3);
+mask_32k{1} = gifti([conte_32k_dir '/parcellations_VGD11b.L.32k_fs_LR.label.gii']); mask_32k{1} = ~mask_32k{1}.cdata(:,3);
+mask_32k{2} = gifti([conte_32k_dir '/parcellations_VGD11b.R.32k_fs_LR.label.gii']); mask_32k{2} = ~mask_32k{2}.cdata(:,3);
 
-mask_164k{1} = gifti(['/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas.LR.164k_fs_LR/parcellations_VGD11b.L.164k_fs_LR.label.gii']); mask_164k{1} = ~mask_164k{1}.cdata(:,3);
-mask_164k{2} = gifti(['/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas.LR.164k_fs_LR/parcellations_VGD11b.R.164k_fs_LR.label.gii']); mask_164k{2} = ~mask_164k{2}.cdata(:,3);
+mask_164k{1} = gifti([conte_164k_dir '/parcellations_VGD11b.L.164k_fs_LR.label.gii']); mask_164k{1} = ~mask_164k{1}.cdata(:,3);
+mask_164k{2} = gifti([conte_164k_dir '/parcellations_VGD11b.R.164k_fs_LR.label.gii']); mask_164k{2} = ~mask_164k{2}.cdata(:,3);
 
-cifti_out_templatefile = '/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas.LR.164k_fs_LR/Conte69.LR.164k_fs_LR.normalwall_surfaceonly_template.dtseries.nii';
+cifti_out_templatefile = [conte_164k_dir '/Conte69.LR.164k_fs_LR.normalwall_surfaceonly_template.dtseries.nii'];
 cifti_out = ft_read_cifti_mod(cifti_out_templatefile);
 
 hems = {'L','R'};
@@ -111,7 +116,9 @@ sorted_inputmaps = sort(inputmaps,2);
 temp = surfaceareas; temp.data = valuecombinations;
 ft_write_cifti_mod('Temp',temp);
 
-evalc(['!wb_command -cifti-resample Temp.dtseries.nii COLUMN ' cifti_out_templatefile ' COLUMN BARYCENTRIC ENCLOSING_VOXEL Temp_164.dtseries.nii -surface-largest -left-spheres /data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k/Conte69.L.sphere.32k_fs_LR.surf.gii /data/cn4/segmentation/freesurfer5_supercomputer/FREESURFER_fs_LR/vc25125/7112b_fs_LR/vc25125.L.sphere.164k_fs_LR.surf.gii -right-spheres /data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k/Conte69.R.sphere.32k_fs_LR.surf.gii /data/cn4/segmentation/freesurfer5_supercomputer/FREESURFER_fs_LR/vc25125/7112b_fs_LR/vc25125.R.sphere.164k_fs_LR.surf.gii']);
+% pretty sure this is just resampling the cifti to 164k, but I'm not 100% sure
+% check that the second spheres are being used correctly (i.e. that they should just be arbitrary fs_LR 164k spheres)
+evalc(['!wb_command -cifti-resample Temp.dtseries.nii COLUMN ' cifti_out_templatefile ' COLUMN BARYCENTRIC ENCLOSING_VOXEL Temp_164.dtseries.nii -surface-largest -left-spheres ' conte_32k_dir '/Conte69.L.sphere.32k_fs_LR.surf.gii ' conte_164k_dir '/Conte69.L.sphere.164k_fs_LR.surf.gii -right-spheres ' conte_32k_dir '/Conte69.R.sphere.32k_fs_LR.surf.gii ' conte_164k_dir '/Conte69.R.sphere.164k_fs_LR.surf.gii']);
 
 valuecombinations_upsampled = ft_read_cifti_mod('Temp_164.dtseries.nii'); valuecombinations_upsampled = valuecombinations_upsampled.data;
 
@@ -119,7 +126,7 @@ surf_withlines = zeros(size(valuecombinations_upsampled));
 
 for hemnum = 1:length(hems)
     hem = hems{hemnum};
-    sphere = gifti(['/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas.LR.164k_fs_LR/Conte69.' hem '.sphere.164k_fs_LR.surf.gii']);
+    sphere = gifti([conte_164k_dir '/Conte69.' hem '.sphere.164k_fs_LR.surf.gii']);
     [phi, theta, r] = cart2sph(sphere.vertices(:,1), sphere.vertices(:,2),sphere.vertices(:,3));
     thetavals = -pi/2 : stripewidth : pi/2;
     surf_withlines_hem = zeros(size(phi));

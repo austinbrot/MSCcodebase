@@ -23,7 +23,10 @@ function cifti_to_border_v2(ciftifile,filled,allcolors_inonemap,bordercolors)
 %
 %E. Gordon 07/10/16
 
-
+code_dir = fullfile(getenv('HOME'), 'MSCcodebase');
+utils_dir = fullfile(code_dir, 'Utilities');
+caret_path = fullfile(utils_dir, 'node_neighbors.txt');
+conte_atlas_dir = fullfile(utils_dir, 'Conte69_atlas-v2.LR.32k_fs_LR.wb');
 
 data_template = ft_read_cifti_mod(ciftifile);
 data = data_template.data;
@@ -87,19 +90,18 @@ end
 clear neighbors
 
 bufsize=16384;
-caretdir = '/data/cn4/laumannt/standard_mesh_atlases/Conte69_atlas.LR.32k_fs_LR_glasser/fsaverage_LR32k';
 % Read in node neighbor file generated from caret -surface-topology-neighbors
 [neighbors(:,1) neighbors(:,2) neighbors(:,3) neighbors(:,4)...
     neighbors(:,5) neighbors(:,6) neighbors(:,7)] = ...
-    textread([caretdir '/node_neighbors.txt'],'%u %u %u %u %u %u %u',...
+    textread(caret_path,'%u %u %u %u %u %u %u',...
     'delimiter',' ','bufsize',bufsize,'emptyvalue',NaN);
 neighbors = neighbors+1;
 
 
 hemcaps = {'LEFT', 'RIGHT'};
 
-MNI{1} = gifti(['/data/cn4/evan/fsaverage_LR32k/Conte69.L.midthickness.32k_fs_LR.surf.gii']); MNI{1} = MNI{1}.vertices;
-MNI{2} = gifti(['/data/cn4/evan/fsaverage_LR32k/Conte69.R.midthickness.32k_fs_LR.surf.gii']); MNI{2} = MNI{2}.vertices;
+MNI{1} = gifti([conte_atlas_dir '/Conte69.L.midthickness.32k_fs_LR.surf.gii']); MNI{1} = MNI{1}.vertices;
+MNI{2} = gifti([conte_atlas_dir '/Conte69.R.midthickness.32k_fs_LR.surf.gii']); MNI{2} = MNI{2}.vertices;
 
 
 for hem = 1:2

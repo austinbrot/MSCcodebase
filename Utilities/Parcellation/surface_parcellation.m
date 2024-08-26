@@ -51,9 +51,13 @@ function  surface_parcellation(cohortfile,tmasklist,subsample,dosubcort,outputdi
 % TOL 01/25/13, modified by EMG 06/24/15
 
 
+code_dir = fullfile(getenv('HOME'), 'MSCcodebase');
+utils_dir = fullfile(code_dir, 'Utilities');
+atlas_dir = fullfile(utils_dir, 'Conte69_atlas-v2.LR.32k_fs_LR.wb');
+
+
 % PARAMETERS TO SET
 smooth = 2.55; % sigma for geodesic smoothing applied to gradient maps
-atlasdir = '/data/cn/data1/scripts/CIFTI_RELATED/Resources/Conte69_atlas-v2.LR.32k_fs_LR.wb/'; % Location of atlas surface
 
 %-----------------------------------------------------------------------
 

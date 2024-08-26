@@ -1,12 +1,15 @@
 function minimametric = metric_minima_all_cifti(metric,neighdist,neighbors)
 
+code_dir = fullfile(getenv('HOME'), 'MSCcodebase');
+utils_dir = fullfile(code_dir, 'Utilities');
+
 if ~exist('neighbors')
     
     bufsize=16384;
     % Read in node neighbor file generated from caret -surface-topology-neighbors
     [neighbors(:,1) neighbors(:,2) neighbors(:,3) neighbors(:,4)...
         neighbors(:,5) neighbors(:,6) neighbors(:,7)] = ...
-        textread(['/data/cn/data1/scripts/CIFTI_RELATED/Resources/node_neighbors.txt'],'%u %u %u %u %u %u %u',...
+        textread([utils_dir '/node_neighbors.txt'],'%u %u %u %u %u %u %u',...
         'delimiter',' ','bufsize',bufsize,'emptyvalue',NaN);
     neighbors = neighbors+1;
 end

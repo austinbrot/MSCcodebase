@@ -134,6 +134,7 @@ end
 dotsloc = strfind(regularized_ciftifile,'.');
 basename = regularized_ciftifile(1:(dotsloc(end-1)-1));
 outname = [basename '_allcolumns_recolored'];
+disp(cifti_data);
 ft_write_cifti_mod(outname,cifti_data);
 set_cifti_powercolors([outname '.dscalar.nii'])
 

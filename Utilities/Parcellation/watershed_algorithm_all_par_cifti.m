@@ -11,8 +11,13 @@ step = (maxh-minh)/stepnum;
 hiter = minh:step:stoph;
 system('mkdir countingDir')
 system('touch countingDir/countfile')
-pool = parpool(8);
+
 %matlabpool open 8
+if ~isempty(gcp('nocreate'))
+    delete(gcp('nocreate'));
+end
+parpool(feature('numcores'));
+
 numlabels = size(labels,2);
 divisions = 4;
 labelsperdivision = floor(numlabels / divisions);
@@ -86,5 +91,5 @@ for j = 1:divisions
     end
 end
 system('rm -r countingDir')
-delete(gcp);
+delete(gcp('nocreate'));
 %matlabpool close

@@ -57,7 +57,6 @@ mkdir(outputdir)
 cd(outputdir)
 
 
-%surfdir = ['/home/data/subjects/' subject '/fs_LR/MNI/fsaverage_LR32k/'];
 
 %Name of this subject's midthickness surface
 midsurf_32k_sub = {[surfdir '/' subject '.L.midthickness.32k_fs_LR.surf.gii'],[surfdir '/' subject '.R.midthickness.32k_fs_LR.surf.gii']};

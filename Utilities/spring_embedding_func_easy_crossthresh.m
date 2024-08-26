@@ -84,7 +84,7 @@ yother(logical(eye(nodes))) = 0;
 
 for kden = thresholds
     
-    [graph,~,~] = matrix_thresholder(corrmat,kden,'kden');
+    graph = matrix_thresholder_simple(corrmat,kden);
     degree = zeros(nodes,1);
     for n = 1:nodes
         row = zeros(1,nodes);
