@@ -1,19 +1,24 @@
-file = '/data/nil-bluearc/GMT/Evan/MSC/Analysis_V1/convergence/similarity_metrics.mat';
+file = '/scratch/users/abrotman/MSCcodebase/results-new/convergence/similarity_metrics.mat';
 
 load(file)
 addeddata = load(file);
 names = fieldnames(addeddata);
+disp(names);
 clear addeddata
 
 for j = 1:length(names)
         if ~strcmp(names{j},'PC_all')
             eval([names{j} '(' names{j} '==0) = NaN;']);
+            
+            % reshape to n x m x 1
+            eval([names{j} ' = reshape(' names{j} ',[size(' names{j} ',1) size(' names{j} ',2) 1]);']);
+            disp(eval(['size(' names{j} ')']));
         end
 end
 
 
 %%
-MSCnums = 1:10;
+MSCnums = 1:1;
 datalength_totest = [2.5 5 10 : 10 : 100];
 outfolder = pwd;
 colors = [0 0 0; .9 .9 0; 0 1 0 ; 1 0 0; 0 0 1; .2 1 1; 1 0 1; .7 .7 .7; 0 .6 .6 ; 1 .5 0];
@@ -30,6 +35,7 @@ for MSCnum = MSCnums
     meancorrmat(meancorrmat==0) = NaN;
     meancorrmat(sum(isnan(corrmat_similarity(:,:,MSCnum)),1) > 900) = NaN;
     stdcorrmat = nanstd(corrmat_similarity,0,1);
+    disp(meancorrmat)
     final_similarities_toplot(MSCnum,:) = meancorrmat;
     plot(datalength_totest,final_similarities_toplot(MSCnum,:),'Color',colors(MSCnum,:),'LineWidth',5)
 end
@@ -79,31 +85,31 @@ end
 
 
 
-h = figure('Color','white','position',[1982 478 1352 804]);
-hold on
+% h = figure('Color','white','position',[1982 478 1352 804]);
+% hold on
 
-for MSCnum = MSCnums
-    MSCname = ['MSC' sprintf('%02i',MSCnum)];
-    legendnames{MSCnum} = MSCname;
-    meancorrmat = nanmean(PC_similarity(:,:,MSCnum),1);
-    meancorrmat(meancorrmat==0) = NaN;
-    meancorrmat(sum(isnan(PC_similarity(:,:,MSCnum)),1) > 900) = NaN;
-    stdcorrmat = nanstd(PC_similarity,0,1);
-    final_similarities_toplot(MSCnum,:) = meancorrmat;
-    plot(datalength_totest,final_similarities_toplot(MSCnum,:),'Color',colors(MSCnum,:),'LineWidth',5)
-end
+% for MSCnum = MSCnums
+%     MSCname = ['MSC' sprintf('%02i',MSCnum)];
+%     legendnames{MSCnum} = MSCname;
+%     meancorrmat = nanmean(PC_similarity(:,:,MSCnum),1);
+%     meancorrmat(meancorrmat==0) = NaN;
+%     meancorrmat(sum(isnan(PC_similarity(:,:,MSCnum)),1) > 900) = NaN;
+%     stdcorrmat = nanstd(PC_similarity,0,1);
+%     final_similarities_toplot(MSCnum,:) = meancorrmat;
+%     plot(datalength_totest,final_similarities_toplot(MSCnum,:),'Color',colors(MSCnum,:),'LineWidth',5)
+% end
 
-set(gca,'FontSize',40,'FontWeight','bold','LineWidth',3)
-title(gca,['Participation Coefficient'])
-xlabel('Time (minutes)','Fontweight','bold','FontSize',50)
-ylabel('Correlation to other half','Fontweight','bold','FontSize',50)
-ylim([.1 .95])
-legend(legendnames,'Location','SouthEast')
+% set(gca,'FontSize',40,'FontWeight','bold','LineWidth',3)
+% title(gca,['Participation Coefficient'])
+% xlabel('Time (minutes)','Fontweight','bold','FontSize',50)
+% ylabel('Correlation to other half','Fontweight','bold','FontSize',50)
+% ylim([.1 .95])
+% legend(legendnames,'Location','SouthEast')
 
-try export_fig(gca,[outfolder '/PC Similarity.pdf'])
-catch
-    savefig(gcf,[outfolder '/PC Similarity.fig'])
-end
+% try export_fig(gca,[outfolder '/PC Similarity.pdf'])
+% catch
+%     savefig(gcf,[outfolder '/PC Similarity.fig'])
+% end
 
 
 

@@ -1,19 +1,35 @@
 
 warning off
-addpath /data/nil-bluearc/GMT/Evan/Scripts/BCT/2016_01_16_BCT/ %brain connectivity toolbox
 run_fromscratch = true;
 
-MSCnums = [10];
-totalMSCnums = 10;
+MSCnums = [1];
+totalMSCnums = 1;
 
 thresholds = [.003 .004 .005:.005:.05];
+sessions = {'01', '02', '03', '04', '05', '06', '07', '08', '09', '10'};
 
-outfolder = ['/data/nil-bluearc/GMT/Evan/MSC/Analysis_V1/convergence/'];
-mkdir(outfolder);
-cd(outfolder);
+home_dir = getenv('HOME');
+addpath(genpath(fullfile(home_dir, '2019_03_03_BCT')))
+oak_dir = getenv('OAK');
+scratch_dir = getenv('SCRATCH');
+out_dir = fullfile(scratch_dir, 'MSCcodebase', 'results');
+MSC_dir = fullfile(oak_dir, 'inprocess', 'MSC', 'ds000224');
+derivatives_dir = fullfile(oak_dir, 'inprocess', 'MSC', 'ds000224-derivatives');
+surface_pipeine_dir = fullfile(derivatives_dir, 'surface_pipeline');
+
+convergence_out_dir = fullfile(out_dir, 'convergence');
+mkdir(convergence_out_dir);
+cd(convergence_out_dir);
+
+% NOTE: The following data quantity parameters have been changed for faster
+% testing. threshold and session have been modified above as well.
+% The original values are commented out and should be replaced for
+% the full analysis. The following files have also been modified:
+% - run_infomap_on_pajekfile.m
 
 xdistance = 30;
-iterations = 1000;
+% iterations = 1000;
+iterations = 100;
 splithalf_quant = 70;
 datalength_totest = [2.5 5 10 : 10 : 100];
 TR = 2.4;
@@ -24,28 +40,28 @@ splithalf_quant_frames = round(splithalf_quant * 60 / TR);
 datalength_totest_frames = round(datalength_totest * 60 / TR);
 %%
 if isempty(gcp('nocreate'))
-pool = parpool(12);
+    pool = parpool(12);
 end
 
 if run_fromscratch
 
-corrmat_similarity = zeros(iterations,length(datalength_totest),totalMSCnums);
-community_dice = zeros(iterations,length(datalength_totest),totalMSCnums);
-PC_similarity = zeros(iterations,length(datalength_totest),totalMSCnums);
-GEff_delta = zeros(iterations,length(datalength_totest),totalMSCnums);
-Modularity_delta = zeros(iterations,length(datalength_totest),totalMSCnums);
-RichClub_delta = zeros(iterations,length(datalength_totest),totalMSCnums);
-GEff_all = zeros(iterations,length(datalength_totest),totalMSCnums);
-Modularity_all = zeros(iterations,length(datalength_totest),totalMSCnums);
+    corrmat_similarity = zeros(iterations,length(datalength_totest),totalMSCnums);
+    community_dice = zeros(iterations,length(datalength_totest),totalMSCnums);
+    % PC_similarity = zeros(iterations,length(datalength_totest),totalMSCnums);
+    GEff_delta = zeros(iterations,length(datalength_totest),totalMSCnums);
+    Modularity_delta = zeros(iterations,length(datalength_totest),totalMSCnums);
+    RichClub_delta = zeros(iterations,length(datalength_totest),totalMSCnums);
+    GEff_all = zeros(iterations,length(datalength_totest),totalMSCnums);
+    Modularity_all = zeros(iterations,length(datalength_totest),totalMSCnums);
 
-% corrmats_setaside = cell(iterations,length(datalength_totest),max(MSCnums));
-% corrmats_test = cell(iterations,length(datalength_totest),max(MSCnums));
-% communities_setaside = cell(iterations,length(datalength_totest),max(MSCnums));
-% communities_test = cell(iterations,length(datalength_totest),max(MSCnums));
+    % corrmats_setaside = cell(iterations,length(datalength_totest),max(MSCnums));
+    % corrmats_test = cell(iterations,length(datalength_totest),max(MSCnums));
+    % communities_setaside = cell(iterations,length(datalength_totest),max(MSCnums));
+    % communities_test = cell(iterations,length(datalength_totest),max(MSCnums));
 
 else
-    load([outfolder '/similarity_metrics.mat'])
-    %load([outfolder '/corrmats_and_communities.mat'])
+    load([convergence_out_dir '/similarity_metrics.mat'])
+    %load([convergence_out_dir '/corrmats_and_communities.mat'])
 end
     
 
@@ -55,26 +71,25 @@ for MSCnum = MSCnums
     
     MSCname = ['MSC' sprintf('%02i',MSCnum)];
     
-    ciftiparcelsdir = ['/data/nil-bluearc/GMT/Evan/MSC/Analysis_V1/parcels/'];
+    ciftiparcelsdir = fullfile(out_dir, 'parcels');
     parcels_LR = [ciftiparcelsdir '/' MSCname '_parcels_LR.dtseries.nii'];
     parcels_struct = ft_read_cifti_mod(parcels_LR);
     parcels = parcels_struct.data;
     parcelIDs = unique(parcels); parcelIDs(parcelIDs<1) = [];
     parcel_distances = smartload([ciftiparcelsdir '/' MSCname '_parcel_distances_xhemlarge.mat']);
-    alldata_communities = load(['/data/nil-bluearc/GMT/Evan/MSC/Analysis_V1/parcels/' MSCname '_parcels_LR_infomap_p003_p05/rawassn_minsize4_regularized_recolored.txt']);
-    PC_all{MSCnum} = zeros(length(parcelIDs),iterations,length(datalength_totest));
-    
-    tmaskfile = ['/data/nil-bluearc/GMT/Evan/MSC/subjects/' MSCname '_TMASKLIST.txt'];
-    [subjectlist, tmask_list] = textread(tmaskfile,'%s %s');
+    alldata_communities = load(fullfile(ciftiparcelsdir, [ MSCname '_parcels_LR_infomap_p003_p05'], 'rawassn_minsize4_regularized_recolored.txt'));
+    % PC_all{MSCnum} = zeros(length(parcelIDs),iterations,length(datalength_totest));
     
     cifti_all = [];
     tmask_all = [];
     sessnum = [];
     withinsess_ind = [];
-    numframes = zeros(length(subjectlist),1);
-    for s = 1 : length(subjectlist)
-        ciftifiles{s} = ['/data/nil-bluearc/GMT/Laumann/MSC/' MSCname '/Functionals/FCPROCESS_SCRUBBED_UWRPMEAN/cifti_timeseries_normalwall_native_freesurf/' subjectlist{s} '_LR_surf_subcort_333_32k_fsLR_smooth2.55.dtseries.nii'];
-        tmask = load(tmask_list{s});
+    numframes = zeros(length(sessions),1);
+    rest_dir = fullfile(surface_pipeine_dir, ['sub-' MSCname], 'processed_restingstate_timecourses');
+    for s = 1 : length(sessions)
+        ciftifiles{s} = fullfile(rest_dir, ['ses-func' sessions{s}], 'cifti', ['sub-' MSCname '_ses-func' sessions{s} '_task-rest_bold_32k_fsLR.dtseries.nii']);
+        tmask_file = fullfile(rest_dir, ['ses-func' sessions{s}], 'cifti', ['sub-' MSCname '_ses-func' sessions{s} '_task-rest_bold_32k_fsLR_tmask.txt']);
+        tmask = load(tmask_file);
         temp = ft_read_cifti_mod(ciftifiles{s});
         temp.data = temp.data(:,logical(tmask));
         tcs{s} = zeros(nnz(tmask),length(parcelIDs));
@@ -86,7 +101,7 @@ for MSCnum = MSCnums
     end
     
     
-    numsessions = length(subjectlist);
+    numsessions = length(sessions);
     
     
     
@@ -102,7 +117,7 @@ for MSCnum = MSCnums
             
             while iteration_failed
                 
-                randorder = randperm(length(subjectlist));
+                randorder = randperm(length(sessions));
                 
                 half_num_sessions = ceil(length(randorder)*1/2);
                 
@@ -132,7 +147,7 @@ for MSCnum = MSCnums
             
             
             %get test data
-            test_sessions = setdiff([1:length(subjectlist)],set_aside_sessions);
+            test_sessions = setdiff([1:length(sessions)],set_aside_sessions);
             test_session_lengths = numframes(test_sessions);
             [test_session_lengths,sortorder] = sort(test_session_lengths,'ascend');
             test_sessions = test_sessions(sortorder);
@@ -158,10 +173,10 @@ for MSCnum = MSCnums
             if iteration_failed
                 corrmat_similarity(iter,amountnum,MSCnum) = NaN;
                 community_dice(iter,amountnum,MSCnum) = NaN;
-                PC_similarity(iter,amountnum,MSCnum) = NaN;
+                % PC_similarity(iter,amountnum,MSCnum) = NaN;
                 GEff_delta(iter,amountnum,MSCnum) = NaN;
                 Modularity_delta(iter,amountnum,MSCnum) = NaN;
-                PC_all{MSCnum}(:,iter,amountnum) = NaN;
+                % PC_all{MSCnum}(:,iter,amountnum) = NaN;
                 GEff_all(iter,amountnum,MSCnum) = NaN;
                 Modularity_all(iter,amountnum,MSCnum) = NaN;
                 
@@ -171,9 +186,9 @@ for MSCnum = MSCnums
                 
                 
                 
-                this_set_aside_outfolder = [outfolder '/setaside_infomap'];
+                this_set_aside_outfolder = [convergence_out_dir '/setaside_infomap'];
                 mkdir(this_set_aside_outfolder)
-                this_test_outfolder = [outfolder '/test_infomap'];
+                this_test_outfolder = [convergence_out_dir '/test_infomap'];
                 mkdir(this_test_outfolder)
                 
                 
@@ -192,7 +207,7 @@ for MSCnum = MSCnums
                 regularized = regularize(communities);
                 consensus_maker_knowncolors_textonly(regularized,alldata_communities,'rawassn_minsize4_regularized')
                 set_aside_communities = load('rawassn_minsize4_regularized_recolored.txt');
-                [~, set_aside_meanPCs, ~] = PC_calc(set_aside_corrmat,parcel_distances < xdistance,communities,thresholds,ones(size(communities,1),1));
+                % [~, set_aside_meanPCs, ~] = PC_calc(set_aside_corrmat,parcel_distances < xdistance,communities,thresholds,ones(size(communities,1),1));
                 
                 globalEffs = zeros(length(thresholds),1);
                 modularity = zeros(length(thresholds),1);
@@ -223,9 +238,9 @@ for MSCnum = MSCnums
                 regularized = regularize(communities);
                 consensus_maker_knowncolors_textonly(regularized,alldata_communities,'rawassn_minsize4_regularized')
                 test_communities = load('rawassn_minsize4_regularized_recolored.txt');
-                [~, test_meanPCs, ~] = PC_calc(test_corrmat,parcel_distances < xdistance,communities,thresholds,ones(size(communities,1),1));
+                % [~, test_meanPCs, ~] = PC_calc(test_corrmat,parcel_distances < xdistance,communities,thresholds,ones(size(communities,1),1));
                 
-                PC_all{MSCnum}(:,iter,amountnum) = test_meanPCs;
+                % PC_all{MSCnum}(:,iter,amountnum) = test_meanPCs;
                 
                 globalEffs = zeros(length(thresholds),1);
                 modularity = zeros(length(thresholds),1);
@@ -252,8 +267,8 @@ for MSCnum = MSCnums
                 
                 corrmat_similarity(iter,amountnum,MSCnum) = paircorr_mod(set_aside_corrmat(indmat),test_corrmat(indmat));
                 community_dice(iter,amountnum,MSCnum) = 2 * nnz(set_aside_communities==test_communities) ./ (numel(set_aside_communities) + numel(test_communities));
-                PC_naninds = isnan(set_aside_meanPCs) | isnan(test_meanPCs);
-                PC_similarity(iter,amountnum,MSCnum) = corr(set_aside_meanPCs(~PC_naninds),test_meanPCs(~PC_naninds));
+                % PC_naninds = isnan(set_aside_meanPCs) | isnan(test_meanPCs);
+                % PC_similarity(iter,amountnum,MSCnum) = corr(set_aside_meanPCs(~PC_naninds),test_meanPCs(~PC_naninds));
                 GEff_delta(iter,amountnum,MSCnum) = abs((test_GE - set_aside_GE)./set_aside_GE);
                 Modularity_delta(iter,amountnum,MSCnum) = abs((test_mod - set_aside_mod)./set_aside_mod);
                 
@@ -265,7 +280,7 @@ for MSCnum = MSCnums
             
         end
         
-        save([outfolder '/similarity_metrics.mat'],'corrmat_similarity','community_dice','PC_similarity','GEff_delta','Modularity_delta','RichClub_delta','PC_all','GEff_all','Modularity_all')
+        save([convergence_out_dir '/similarity_metrics.mat'],'corrmat_similarity','community_dice','GEff_delta','Modularity_delta','RichClub_delta','GEff_all','Modularity_all')
     end
     
     disp(' ')

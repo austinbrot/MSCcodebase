@@ -108,7 +108,8 @@ for i = 1:numanalyses
         pajekfile = [outdir '/pajek_col' num2str(i) '.net'];
         edgesleft=round(thresholdarray(i)*numpossibleedges);
         numuse = edgesleft + numnodes + 2; % Number of edges plus number of nodes plus 2 lines for the headers in the pajek file
-        evalc(['!head -n ' num2str(numuse) ' ' pajekfileorig ' >! ' pajekfile]);
+        out = evalc(['!head -n ' num2str(numuse) ' ' pajekfileorig ' > ' pajekfile]);
+        disp(out);
     end
 end
     
