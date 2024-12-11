@@ -2,10 +2,10 @@
 #SBATCH --job-name=batch_msc_analyses
 #SBATCH --output=log/%x.%j.out
 #SBATCH --error=log/%x.%j.err
-#SBATCH --time=20:00:00
-#SBATCH -p bigmem
-#SBATCH -c 8
-#SBATCH --mem 256G
+#SBATCH --time=23:30:00
+#SBATCH -p bigmem,normal,hns,russpold
+#SBATCH -c 14
+#SBATCH --mem 360G
 #SBATCH --mail-type END
 #SBATCH --mail-user abrotman@stanford.edu
 
@@ -17,5 +17,5 @@ echo "Running batch MSC analysis from ${MSC_CODEBASE_PATH}"
 ml biology workbench
 ml matlab
 
-matlab -batch "addpath(genpath('${MSC_CODEBASE_PATH}')); batch_MSC_analyses_BIDS; exit"
+matlab -batch "addpath(genpath('${MSC_CODEBASE_PATH}')); batch_MSC_analyses; exit"
 

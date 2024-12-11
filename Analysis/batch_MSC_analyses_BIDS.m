@@ -36,8 +36,8 @@ for MSCnum = MSCnums
     parcelinfomap_outfolder = [parcellation_outfolder '/' MSCname '_parcels_LR_infomap_p003_p05'];
     surfdir = fullfile(derivatives_dir, 'fmriprep', ['sub-' MSCname], 'anat');
 
-    % TODO: find out if this is subject specific or general for all fsLR
-    dmatname = [surface_dist_dir '/sub-MSC01/cifti_distances/sub-MSC01distmat_surf_geodesic_vol_euc_xhem_large_uint8.mat'];
+    % TODO: find out if this is constant across fslr spaces
+    dmatname = fullfile(oak_dir, 'inprocess', 'MSC', 'fslr_distmat.mat');
         
     
     ciftifiles = cell(length(sessions),1);
@@ -90,7 +90,7 @@ for MSCnum = MSCnums
         
         % dmatname = [infomap_outfolder '/distmat_surf_geodesic_vol_euc_xhem_large_uint8.mat'];
         
-        Run_Infomap_2015(corrmat, dmatname, xdist, thresholds, 0, infomap_outfolder, 8, structure_indices);
+        Run_Infomap_2015(corrmat, dmatname, xdist, thresholds, 0, infomap_outfolder, 12, structure_indices);
         clear corrmat
         
         communities = modify_clrfile('simplify','rawassn.txt',400);
