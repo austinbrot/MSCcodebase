@@ -2,10 +2,10 @@
 #SBATCH --job-name=msc_reliability
 #SBATCH --output=log/%x.%j.out
 #SBATCH --error=log/%x.%j.err
-#SBATCH --time=24:00:00
+#SBATCH --time=6:00:00
 #SBATCH -p normal
 #SBATCH -c 14
-#SBATCH --mem 64G
+#SBATCH --mem 32G
 #SBATCH --mail-type END
 #SBATCH --mail-user abrotman@stanford.edu
 
