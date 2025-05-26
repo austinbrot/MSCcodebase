@@ -1,5 +1,5 @@
 file_new = '/scratch/users/abrotman/MSCcodebase/results-new/convergence/similarity_metrics.mat';
-file_old = '/scratch/users/abrotman/MSCcodebase/results-new/convergence/similarity_metrics.mat';
+file_old = '/scratch/users/abrotman/MSCcodebase/results/convergence/similarity_metrics.mat';
 
 % Load both datasets
 data_new = load(file_new);
