@@ -17,5 +17,5 @@ echo "Running batch MSC analysis from ${MSC_CODEBASE_PATH}"
 ml biology workbench
 ml matlab
 
-matlab -batch "addpath(genpath('${MSC_CODEBASE_PATH}')); batch_MSC_analyses; exit"
+matlab -batch "addpath(genpath('${MSC_CODEBASE_PATH}')); batch_MSC_analyses_BIDS; exit"
 
