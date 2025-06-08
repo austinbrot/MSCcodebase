@@ -3,7 +3,7 @@ function batch_MSC_analyses_BIDS_mod(current_MSCname_str)
 % Expects a single string argument: the subject ID (e.g., 'MSC01')
 
 if nargin < 1
-    error('Usage: batch_MSC_analyses_BIDS_mod('current_MSCname_string')');
+    error('Usage: batch_MSC_analyses_BIDS_mod(''current_MSCname_string'')');
 end
 
 MSCname = strtrim(current_MSCname_str);
@@ -41,11 +41,11 @@ out_dir = fullfile(scratch_dir, '/MSCcodebase/test'); % Main output for this scr
 % NEW: Define path to precomputed data
 precomputed_data_main_dir = fullfile(scratch_dir, 'MSCcodebase', 'precomputed_vertexwise_data');
 
-MSC_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224');
-derivatives_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives-new');
-surface_pipeine_dir = [derivatives_dir '/xcp_d']; % Corrected typo pipeline -> pipeline
+MSC_dir = fullfile(oak_dir, 'data', 'MSC', 'ds000224');
+derivatives_dir = fullfile(oak_dir, 'data', 'MSC', 'ds000224-derivatives');
+surface_pipeine_dir = fullfile(derivatives_dir, 'xcpd-0.10.7'); % Corrected typo pipeline -> pipeline
 
-surface_dist_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives/surface_pipeline');
+surface_dist_dir = fullfile(derivatives_dir, 'surface_pipeline');
 
 sessions = {'01', '03', '05', '07', '09'};
 % sessions = {'01', '02', '03', '04', '05', '06', '07', '08', '09', '10'};
@@ -68,11 +68,11 @@ springembed_outfolder = [out_dir '/spring_embed'];
 parcelinfomap_outfolder = [parcellation_outfolder '/' MSCname '_parcels_LR_infomap_p003_p05'];
 surfdir = fullfile(derivatives_dir, 'fmriprep', ['sub-' MSCname], 'anat');
 
-dmatname = fullfile(oak_dir, 'inprocess', 'MSC', 'fslr_distmat.mat');
+dmatname = fullfile(oak_dir, 'data', 'MSC', 'fslr_distmat.mat');
     
 % MODIFIED: Paths to ciftifiles still needed for parcel_creator_cifti template and potentially other steps
 ciftifiles = cell(length(sessions),1);
-rest_dir = fullfile(derivatives_dir, 'xcp_d', ['sub-' MSCname]);
+rest_dir = fullfile(surface_pipeine_dir, ['sub-' MSCname]);
 for s = 1:length(sessions)
     ses_dir = fullfile(rest_dir, ['ses-func' sessions{s}], 'func');
     ciftifiles{s} = fullfile(ses_dir, ['sub-' MSCname '_ses-func' sessions{s} '_task-rest_space-fsLR_den-91k_desc-denoisedSmoothed_bold.dtseries.nii']);
@@ -84,7 +84,7 @@ parcellation_file = [parcellation_outfolder '/' MSCname '_parcels_LR.dtseries.ni
 if ~exist(infomap_outfolder, 'dir'), mkdir(infomap_outfolder); end
 if ~exist(springembed_outfolder, 'dir'), mkdir(springembed_outfolder); end
 if ~exist(parcellation_outfolder, 'dir'), mkdir(parcellation_outfolder); end
-if ~exist([parcellation_outfolder '/' MSCname '/'], 'dir'), mkdir([parcellation_outfolder '/' MSCname '/']); end
+if ~exist(fullfile(parcellation_outfolder, MSCname), 'dir'), mkdir(fullfile(parcellation_outfolder, MSCname)); end
 if ~exist(parcelinfomap_outfolder, 'dir'), mkdir(parcelinfomap_outfolder); end
 
 
@@ -125,7 +125,7 @@ if run_vertexwise_infomap
     structure_indices = structure_indices(structure_indices>0);
     structure_indices = (structure_indices > 2) +1;
     
-    Run_Infomap_2015(corrmat, dmatname, xdist, thresholds, 0, infomap_outfolder, 12, structure_indices);
+    Run_Infomap_2015(corrmat, dmatname, xdist, thresholds, 0, infomap_outfolder, 6, structure_indices);
     clear corrmat % Clear after use
     
     communities = modify_clrfile('simplify','rawassn.txt',400);
@@ -162,8 +162,8 @@ if run_parcellation
     clear data_for_parcellation;
     
     parcel_creator_cifti('corrofcorr_allgrad_LR_subcort_smooth2.55_wateredge_avg.dtseries.nii',[MSCname '_parcels'],edgethresh,ciftidata_template_path)
-    movefile([parcellation_outfolder '/' MSCname '/' MSCname '_parcels_edgethresh_' num2str(edgethresh) '.dtseries.nii'],parcellation_file);
-    try delete([parcellation_outfolder '/' MSCname '/corrofcorr_allgrad_LR_subcort_smooth2.55.dtseries.nii']); catch; end % MODIFIED: path to delete
+    movefile(fullfile(parcellation_outfolder, MSCname, [MSCname '_parcels_edgethresh_' num2str(edgethresh) '.dtseries.nii']),parcellation_file);
+    try delete(fullfile(parcellation_outfolder, MSCname, 'corrofcorr_allgrad_LR_subcort_smooth2.55.dtseries.nii')); catch; end % MODIFIED: path to delete
     
     fprintf('Finished parcellation for %s!\n', MSCname);
 end
@@ -193,7 +193,7 @@ if make_parcel_corrmats
     corrmat(isnan(corrmat)) = 0;
     corrmat = FisherTransform(corrmat);
     
-    save([parcellation_outfolder '/' MSCname '_parcel_corrmat.mat'],'corrmat');
+    save(fullfile(parcellation_outfolder, [MSCname '_parcel_corrmat.mat']),'corrmat');
     fprintf('Finished making parcel corrmats for %s.\n', MSCname);
 end
 
@@ -216,7 +216,7 @@ if make_parcel_distmats
         parcel_centroids(IDnum) = parcelinds(centroidind);
     end
     parcel_distances = distances(parcel_centroids,parcel_centroids);
-    save([parcellation_outfolder '/' MSCname '_parcel_distances_xhemlarge.mat'],'parcel_distances');
+    save(fullfile(parcellation_outfolder, [MSCname '_parcel_distances_xhemlarge.mat']),'parcel_distances');
     clear distances;
     fprintf('Finished making parcel distmats for %s.\n', MSCname);
 end
@@ -226,8 +226,8 @@ if run_parcel_infomap
     fprintf('Running parcel infomap for %s...\n', MSCname);
     cd(parcelinfomap_outfolder)
 
-    load([parcellation_outfolder '/' MSCname '_parcel_corrmat.mat'], 'corrmat'); 
-    load([parcellation_outfolder '/' MSCname '_parcel_distances_xhemlarge.mat'], 'distances');
+    corrmat = smartload(fullfile(parcellation_outfolder, [MSCname '_parcel_corrmat.mat'])); 
+    distances = smartload(fullfile(parcellation_outfolder, [MSCname '_parcel_distances_xhemlarge.mat']));
     
     Run_Infomap_nopar(corrmat, distances, xdist, thresholds, 0, parcelinfomap_outfolder);
     communities = modify_clrfile('simplify','rawassn.txt',4);
@@ -253,9 +253,9 @@ if run_spring_embedding
     fprintf('Running spring embedding for %s...\n', MSCname);
     cd(springembed_outfolder)
 
-    load([parcellation_outfolder '/' MSCname '_parcel_corrmat.mat'], 'corrmat');
-    load([parcellation_outfolder '/' MSCname '_parcel_distances_xhemlarge.mat'], 'distances');
-    consensus = load([parcelinfomap_outfolder '/rawassn_minsize4_regularized_recolored.txt']);
+    load(fullfile(parcellation_outfolder, [MSCname '_parcel_corrmat.mat']), 'corrmat');
+    load(fullfile(parcellation_outfolder, [MSCname '_parcel_distances_xhemlarge.mat']), 'distances');
+    consensus = load(fullfile(parcelinfomap_outfolder, 'rawassn_minsize4_regularized_recolored.txt'));
     spring_embedding_func_easy_crossthresh(corrmat,consensus,1,25,distances,xdist,thresholds,[MSCname '_spring_embed']);
     close all;
     fprintf('Finished spring embedding for %s.\n', MSCname);
