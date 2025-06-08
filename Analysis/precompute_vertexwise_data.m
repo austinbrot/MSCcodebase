@@ -5,7 +5,7 @@ function precompute_vertexwise_data(subject_list_csv_string)
 % Accepts a comma-separated string of subject IDs (e.g., 'MSC01,MSC02,MSC03')
 
 if nargin < 1
-    error('Usage: precompute_vertexwise_data('subject_id_list_csv')');
+    error('Usage: precompute_vertexwise_data(''subject_id_list_csv'')');
 end
 
 fprintf('Starting precomputation of vertex-wise data...\n');
@@ -34,8 +34,8 @@ if ~exist(precomputed_data_main_dir, 'dir')
     fprintf('Created directory: %s\n', precomputed_data_main_dir);
 end
 
-MSC_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224'); % Base BIDS directory
-derivatives_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives-new'); % Derivatives directory
+MSC_dir = fullfile(oak_dir, 'data', 'MSC', 'ds000224'); % Base BIDS directory
+derivatives_dir = fullfile(oak_dir, 'data', 'MSC', 'ds000224-derivatives'); % Derivatives directory
 
 % Sessions to process for each subject
 sessions = {'01', '03', '05', '07', '09'};
@@ -62,7 +62,7 @@ for i = 1:length(subject_ids_cell_array)
 
     %% Aggregate data from all sessions
     ciftifiles = cell(length(sessions),1);
-    rest_dir = fullfile(derivatives_dir, 'xcp_d', ['sub-' MSCname]);
+    rest_dir = fullfile(derivatives_dir, 'xcpd-0.10.7', ['sub-' MSCname]);
     for s = 1:length(sessions)
         ses_dir = fullfile(rest_dir, ['ses-func' sessions{s}], 'func');
         ciftifiles{s} = fullfile(ses_dir, ['sub-' MSCname '_ses-func' sessions{s} '_task-rest_space-fsLR_den-91k_desc-denoisedSmoothed_bold.dtseries.nii']);
@@ -80,6 +80,7 @@ for i = 1:length(subject_ids_cell_array)
         end
         data_struct = ft_read_cifti_mod(ciftifiles{s});
         session_data = data_struct.data;
+        display(size(session_data));
         if isempty(alldata) % Check if alldata is empty for the first valid session
             alldata = session_data;
             cifti_metadata_template = data_struct; % Store the first one as template
