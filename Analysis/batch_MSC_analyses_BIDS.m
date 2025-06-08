@@ -15,15 +15,15 @@ run_spring_embedding = 0;
 home_dir = getenv('HOME');
 oak_dir = getenv('OAK');
 scratch_dir = getenv('SCRATCH');
-out_dir = fullfile(scratch_dir, '/MSCcodebase/results-new');
-MSC_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224');
-derivatives_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives-new');
+out_dir = fullfile(scratch_dir, 'MSCcodebase', 'results-new');
+MSC_dir = fullfile(oak_dir, 'inprocess', 'MSC', 'ds000224');
+derivatives_dir = fullfile(oak_dir, 'inprocess', 'MSC', 'ds000224-derivatives-new');
 surface_pipeine_dir = [derivatives_dir '/xcp_d'];
 
-surface_dist_dir = fullfile(oak_dir, '/inprocess/MSC/ds000224-derivatives/surface_pipeline');
+surface_dist_dir = fullfile(oak_dir, 'inprocess', 'MSC', 'ds000224-derivatives', 'surface_pipeline');
 
 sessions = {'01', '03', '05', '07', '09'};
-% sessions = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'];
+% sessions = {'01', '02', '03', '04', '05', '06', '07', '08', '09', '10'};
 
 
 for MSCnum = MSCnums
@@ -90,7 +90,7 @@ for MSCnum = MSCnums
         
         % dmatname = [infomap_outfolder '/distmat_surf_geodesic_vol_euc_xhem_large_uint8.mat'];
         
-        Run_Infomap_2015(corrmat, dmatname, xdist, thresholds, 0, infomap_outfolder, 12, structure_indices);
+        Run_Infomap_2015(corrmat, dmatname, xdist, thresholds, 0, infomap_outfolder, 6, structure_indices);
         clear corrmat
         
         communities = modify_clrfile('simplify','rawassn.txt',400);
