@@ -2,10 +2,10 @@
 #SBATCH --job-name=msc_precompute_vertex_data
 #SBATCH --output=log/%x.%j.out
 #SBATCH --error=log/%x.%j.err
-#SBATCH --time=04:00:00 # Estimate 4 hours, adjust as needed
-#SBATCH -p bigmem # Use a partition with large memory
+#SBATCH --time=08:00:00 # ~40 minutes per subject + 1 hour buffer
+#SBATCH -p bigmem,hns,normal # Use a partition with large memory
 #SBATCH -c 8      # Number of CPUs, adjust based on paircorr_mod parallelization or I/O needs
-#SBATCH --mem=450G # Request substantial memory, adjust based on largest subject/session count
+#SBATCH --mem=256G # Request substantial memory, adjust based on largest subject/session count
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=abrotman@stanford.edu # Replace with your email
 
@@ -28,7 +28,7 @@ ml matlab
 
 # Run MATLAB script, passing the subject list CSV as an argument
 # Note the single quotes around the MATLAB command and escaped single quotes for the argument string
-matlab -nodisplay -nosplash -r "try; addpath(genpath(\'${MSC_CODEBASE_PATH}\')); precompute_vertexwise_data(\'${SUBJECT_ID_LIST_CSV}\'); catch e; fprintf('MATLAB Error: %s\\n', e.message); for i=1:numel(e.stack), fprintf('File: %s, Name: %s, Line: %d\\n', e.stack(i).file, e.stack(i).name, e.stack(i).line); end; exit(1); end; exit(0);"
+matlab -nodisplay -nosplash -r "try; addpath(genpath('${MSC_CODEBASE_PATH}')); precompute_vertexwise_data('${SUBJECT_ID_LIST_CSV}'); catch e; fprintf('MATLAB Error: %s\n', e.message); for i=1:numel(e.stack), fprintf('File: %s, Name: %s, Line: %d\n', e.stack(i).file, e.stack(i).name, e.stack(i).line); end; exit(1); end; exit(0);"
 
 MATLAB_EXIT_CODE=$?
 if [ ${MATLAB_EXIT_CODE} -ne 0 ]; then

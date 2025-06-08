@@ -2,10 +2,10 @@
 #SBATCH --job-name=msc_subject_analysis
 #SBATCH --output=log/%x_subject_%a.out # %a for array task ID
 #SBATCH --error=log/%x_subject_%a.err  # %a for array task ID
-#SBATCH --time=12:00:00 # Estimate 12 hours per subject, adjust as needed
+#SBATCH --time=24:00:00 # Estimate 48 hours per subject, adjust as needed
 #SBATCH -p normal,hns,russpold # Partitions for subject jobs
-#SBATCH -c 12      # Number of CPUs, adjust based on script needs (e.g., Infomap)
-#SBATCH --mem=96G  # Memory per subject job
+#SBATCH --cpus-per-task=12     # Number of CPUs (minimum 12 cores)
+#SBATCH --mem=280G  # Memory per subject job
 #SBATCH --mail-type=FAIL,END # Notify on fail or end of entire array
 #SBATCH --mail-user=abrotman@stanford.edu # Replace with your email
 
@@ -49,7 +49,7 @@ ml biology workbench
 ml matlab
 
 # Run MATLAB script, passing the current subject ID as an argument
-matlab -nodisplay -nosplash -r "try; addpath(genpath(\'${MSC_CODEBASE_PATH}\')); batch_MSC_analyses_BIDS_mod(\'${CURRENT_SUBJECT_ID}\'); catch e; fprintf('MATLAB Error: %s\\n', e.message); for i=1:numel(e.stack), fprintf('File: %s, Name: %s, Line: %d\\n', e.stack(i).file, e.stack(i).name, e.stack(i).line); end; exit(1); end; exit(0);"
+matlab -nodisplay -nosplash -r "try; addpath(genpath('${MSC_CODEBASE_PATH}')); batch_MSC_analyses_BIDS_mod('${CURRENT_SUBJECT_ID}'); catch e; fprintf('MATLAB Error: %s\n', e.message); for i=1:numel(e.stack), fprintf('File: %s, Name: %s, Line: %d\n', e.stack(i).file, e.stack(i).name, e.stack(i).line); end; exit(1); end; exit(0);"
 
 MATLAB_EXIT_CODE=$?
 if [ ${MATLAB_EXIT_CODE} -ne 0 ]; then
